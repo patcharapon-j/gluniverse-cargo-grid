@@ -940,6 +940,7 @@ class CargoBoardWindow {
     const isMovingSelected = Boolean(selected && this.placementActive && this.previewCell);
     const cargoTiles = Object.values(mission.cargo ?? {})
       .filter(cargo => cargo.location?.type === "container" && cargo.location.containerId === container.id)
+      .filter(cargo => !isHiddenFromPlayer(cargo))
       .map(cargo => this.renderCargoTile(cargo, cellSize))
       .join("");
 
@@ -1042,6 +1043,7 @@ class CargoBoardWindow {
             </select></label>
             <label>Qty<input name="quantity" type="number" value="${escapeAttr(draft.quantity)}" min="1" max="20"></label>
             <label>Color<input name="color" type="color" value="${escapeAttr(draft.color)}"></label>
+            <label class="glucargo-hidden-toggle" title="Hide from players until revealed"><input name="hidden" type="checkbox" ${draft.hidden ? "checked" : ""}> Hidden from players</label>
           </div>
           <div class="glucargo-shape-tools">
             <span>Shape</span>
@@ -1082,8 +1084,13 @@ class CargoBoardWindow {
     const preview = this.renderCargoShapePreview(cargo);
     const lockMessage = locked ? `Picked up by ${locked}` : "";
     const newClass = this.renderedFloorCargoIds.has(cargo.id) ? "" : " is-new";
+    const isHidden = Boolean(cargo.hidden);
+    const hiddenClass = game.user.isGM && isHidden ? " is-hidden" : "";
+    const visibilityToggle = game.user.isGM
+      ? `<button type="button" class="glucargo-visibility-toggle ${isHidden ? "is-hidden" : ""}" data-action="toggle-cargo-hidden" data-cargo-id="${escapeAttr(cargo.id)}" title="${isHidden ? "Hidden from players — click to reveal" : "Visible to players — click to hide"}" aria-label="${isHidden ? "Reveal cargo to players" : "Hide cargo from players"}"><i class="fa-solid ${isHidden ? "fa-eye-slash" : "fa-eye"}"></i></button>`
+      : "";
     return `
-      <article class="glucargo-floor-item${newClass} ${this.selectedCargoId === cargo.id ? "is-selected" : ""} ${locked ? "is-locked" : ""} priority-${escapeAttr(cargo.priority ?? "normal")}" data-cargo-id="${escapeAttr(cargo.id)}" draggable="false" style="--cargo-accent:${escapeAttr(cat.color)};">
+      <article class="glucargo-floor-item${newClass}${hiddenClass} ${this.selectedCargoId === cargo.id ? "is-selected" : ""} ${locked ? "is-locked" : ""} priority-${escapeAttr(cargo.priority ?? "normal")}" data-cargo-id="${escapeAttr(cargo.id)}" draggable="false" style="--cargo-accent:${escapeAttr(cat.color)};">
         <button type="button" data-action="select-cargo" data-cargo-id="${escapeAttr(cargo.id)}">
           ${preview}
           <span class="glucargo-floor-item__copy">
@@ -1098,6 +1105,7 @@ class CargoBoardWindow {
           ${locked ? `<span class="glucargo-lock glucargo-floor-lock" title="Locked by ${escapeAttr(locked)}"><i class="fa-solid fa-lock"></i></span>` : ""}
           ${lockMessage ? `<span class="glucargo-lock-banner"><strong>${escapeHtml(lockMessage)}</strong></span>` : ""}
         </button>
+        ${visibilityToggle}
       </article>
     `;
   }
@@ -1211,6 +1219,7 @@ class CargoBoardWindow {
           <dt>Subtitle</dt><dd>${escapeHtml(visible.subtitle || cat.label)}</dd>
           <dt>Category</dt><dd>${escapeHtml(cat.label)}</dd>
           <dt>Visibility</dt><dd>${escapeHtml(cargo.visibility ?? VISIBILITY.revealed)}</dd>
+          ${canEdit ? `<dt>Players</dt><dd>${cargo.hidden ? "Hidden" : "Shown"}</dd>` : ""}
           <dt>Priority</dt><dd>${escapeHtml(cargo.priority ?? "normal")}</dd>
           <dt>Location</dt><dd>${escapeHtml(location)}</dd>
           <dt>Footprint</dt><dd>${footprint} / ${cells.length} cells</dd>
@@ -1234,6 +1243,7 @@ class CargoBoardWindow {
             <label>Subtitle<input name="subtitle" value="${escapeAttr(cargo.subtitle ?? "")}"></label>
             <label>Visibility<select name="visibility">${Object.values(VISIBILITY).map(value => `<option value="${value}" ${cargo.visibility === value ? "selected" : ""}>${capitalize(value)}</option>`).join("")}</select></label>
             <label>Priority<select name="priority">${["normal", "high", "critical"].map(value => `<option value="${value}" ${cargo.priority === value ? "selected" : ""}>${capitalize(value)}</option>`).join("")}</select></label>
+            <label class="glucargo-hidden-toggle" title="Hide from players until revealed"><input name="hidden" type="checkbox" ${cargo.hidden ? "checked" : ""}> Hidden from players</label>
             <button type="submit"><i class="fa-solid fa-floppy-disk"></i> Save</button>
             <button type="button" class="danger" data-action="delete-cargo" data-cargo-id="${escapeAttr(cargo.id)}"><i class="fa-solid fa-trash"></i> Delete</button>
           </form>
@@ -1265,7 +1275,8 @@ class CargoBoardWindow {
       priority: ["normal", "high", "critical"].includes(priority) ? priority : "normal",
       quantity: String(Math.max(1, Math.min(20, Number(overrides.quantity ?? 1) || 1))),
       color: /^#[0-9a-f]{6}$/i.test(color) ? color : fallbackColor,
-      randomShapeSize: String(randomShapeSize)
+      randomShapeSize: String(randomShapeSize),
+      hidden: Boolean(overrides.hidden)
     };
   }
 
@@ -1286,7 +1297,8 @@ class CargoBoardWindow {
       priority: formData.get("priority") ?? "normal",
       quantity: formData.get("quantity") ?? "1",
       color: formData.get("color") ?? CATEGORIES.supplies.color,
-      randomShapeSize: formData.get("randomShapeSize") ?? getShapeMetrics(this.quickShape).cells.length
+      randomShapeSize: formData.get("randomShapeSize") ?? getShapeMetrics(this.quickShape).cells.length,
+      hidden: formData.get("hidden") === "on"
     });
   }
 
@@ -1555,6 +1567,7 @@ class CargoBoardWindow {
     if (action === "return-to-floor") return this.returnToFloor(actionEl.dataset.cargoId);
     if (action === "open-linked-item") return this.openLinkedItem(actionEl.dataset.cargoId);
     if (action === "delete-cargo") return this.deleteCargo(actionEl.dataset.cargoId);
+    if (action === "toggle-cargo-hidden") return this.toggleCargoHidden(actionEl.dataset.cargoId);
     if (action === "toggle-coordinates") return this.toggleCoordinates();
     if (action === "toggle-broken-cells") return this.toggleBrokenCells(actionEl.dataset.containerId);
 
@@ -1926,6 +1939,7 @@ class CargoBoardWindow {
     const name = String(formData.get("name") || this.droppedItem?.name || "Cargo").trim();
     const subtitle = String(formData.get("subtitle") || "").trim();
     const linkedItem = this.droppedItem ? duplicate(this.droppedItem) : null;
+    const hidden = formData.get("hidden") === "on";
     await mutateData(data => {
       const mission = getActiveMission(data);
       if (!mission) return;
@@ -1942,6 +1956,7 @@ class CargoBoardWindow {
           rotation: 0,
           location: { type: "floor" },
           visibility: linkedItem ? VISIBILITY.scanned : VISIBILITY.revealed,
+          hidden,
           priority: String(formData.get("priority") || "normal"),
           value: "",
           benefit: "",
@@ -1971,6 +1986,17 @@ class CargoBoardWindow {
       cargo.subtitle = String(formData.get("subtitle") || "");
       cargo.visibility = String(formData.get("visibility") || cargo.visibility);
       cargo.priority = String(formData.get("priority") || cargo.priority);
+      cargo.hidden = formData.get("hidden") === "on";
+      cargo.updatedAt = Date.now();
+    });
+  }
+
+  async toggleCargoHidden(cargoId) {
+    if (!game.user.isGM || !cargoId) return;
+    await mutateData(data => {
+      const cargo = getActiveMission(data)?.cargo?.[cargoId];
+      if (!cargo) return;
+      cargo.hidden = !cargo.hidden;
       cargo.updatedAt = Date.now();
     });
   }
@@ -2199,6 +2225,7 @@ class CargoBoardWindow {
     const query = this.search.trim().toLowerCase();
     let cargo = Object.values(mission.cargo ?? {}).filter(item => item.location?.type !== "container");
     cargo = cargo.filter(item => {
+      if (isHiddenFromPlayer(item)) return false;
       if (!game.user.isGM && item.visibility === VISIBILITY.unknown) return true;
       const visible = getPlayerFacingCargo(item);
       if (query && !`${visible.name} ${visible.subtitle}`.toLowerCase().includes(query)) return false;
@@ -2447,6 +2474,10 @@ function summarizeItem(item) {
   if (item.level !== null && item.level !== undefined && item.level !== "") pieces.push(`Level ${item.level}`);
   if (item.rarity) pieces.push(capitalize(String(item.rarity)));
   return pieces.join(" / ");
+}
+
+function isHiddenFromPlayer(cargo) {
+  return Boolean(cargo?.hidden) && !game.user.isGM;
 }
 
 function getPlayerFacingCargo(cargo) {
@@ -2725,7 +2756,7 @@ function priorityRank(priority) {
 function buildExtractionReport(mission) {
   const cargo = Object.values(mission.cargo ?? {});
   const extracted = cargo.filter(item => item.location?.type === "container");
-  const abandoned = cargo.filter(item => item.location?.type !== "container");
+  const abandoned = cargo.filter(item => item.location?.type !== "container" && !item.hidden);
   const byCategory = extracted.reduce((map, item) => {
     const label = getCategory(item).label;
     map[label] = (map[label] ?? 0) + 1;
