@@ -601,6 +601,7 @@ class CargoMinimapWindow {
 
     const cargoCells = Object.values(mission.cargo ?? {})
       .filter(cargo => cargo.location?.type === "container" && cargo.location.containerId === container.id)
+      .filter(cargo => !isHiddenFromPlayer(cargo))
       .flatMap(cargo => this.renderCargoCells(cargo, container))
       .join("");
 
@@ -810,7 +811,8 @@ class CargoBoardWindow {
     }
 
     const activeContainer = this.getActiveContainer(mission);
-    const selected = mission.cargo?.[this.selectedCargoId] ?? null;
+    const selectedRecord = mission.cargo?.[this.selectedCargoId] ?? null;
+    const selected = selectedRecord && !isHiddenFromPlayer(selectedRecord) ? selectedRecord : null;
     if (!selected) {
       this.selectedCargoId = null;
       this.selectedRotation = null;
