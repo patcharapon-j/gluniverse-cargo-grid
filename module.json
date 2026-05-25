@@ -1,0 +1,32 @@
+{
+  "id": "gluniverse-cargo-grid",
+  "title": "GLUniverse Cargo Grid",
+  "description": "A premium mission cargo packing board for Foundry VTT v13 with irregular cargo shapes, shared containers, and PF2e-aware loot snapshots.",
+  "version": "0.1.0",
+  "url": "https://github.com/patcharapon-j/gluniverse-cargo-grid",
+  "manifest": "https://github.com/patcharapon-j/gluniverse-cargo-grid/releases/latest/download/module.json",
+  "download": "https://github.com/patcharapon-j/gluniverse-cargo-grid/releases/download/v0.1.0/gluniverse-cargo-grid.zip",
+  "authors": [
+    {
+      "name": "GLUniverse"
+    }
+  ],
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "socket": true,
+  "esmodules": [
+    "scripts/gluniverse-cargo-grid.mjs"
+  ],
+  "styles": [
+    "styles/gluniverse-cargo-grid.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ]
+}
