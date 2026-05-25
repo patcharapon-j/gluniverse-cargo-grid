@@ -1804,6 +1804,20 @@
   grid-column: span 2;
 }
 
+.glucargo-hidden-toggle {
+  grid-column: span 2;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px !important;
+  cursor: pointer;
+}
+
+.glucargo-hidden-toggle input {
+  width: auto;
+  margin: 0;
+}
+
 .glucargo-shape-tools {
   flex-wrap: wrap;
   margin-top: 10px;
@@ -1952,10 +1966,54 @@
 
 .glucargo-floor-item {
   --cargo-accent: var(--glucargo-cyan);
+  position: relative;
   min-width: 0;
   flex: 0 0 auto;
   content-visibility: auto;
   contain-intrinsic-size: 82px;
+}
+
+.glucargo-visibility-toggle {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0 !important;
+  min-height: 0 !important;
+  font-size: 10px;
+  border: 1px solid color-mix(in srgb, var(--cargo-accent) 40%, rgba(255, 255, 255, 0.12)) !important;
+  background: rgba(2, 7, 11, 0.82) !important;
+  color: var(--glucargo-muted);
+  border-radius: 3px;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.12s ease, color 0.12s ease;
+}
+
+.glucargo-floor-item:hover .glucargo-visibility-toggle {
+  opacity: 1;
+}
+
+.glucargo-visibility-toggle:hover {
+  opacity: 1;
+  color: var(--glucargo-cyan);
+}
+
+.glucargo-visibility-toggle.is-hidden {
+  opacity: 1;
+  color: var(--glucargo-amber);
+  border-color: color-mix(in srgb, var(--glucargo-amber) 55%, rgba(255, 255, 255, 0.12)) !important;
+}
+
+.glucargo-floor-item.is-hidden > button {
+  opacity: 0.6;
+  filter: grayscale(0.35);
+  border-style: dashed !important;
 }
 
 .glucargo-floor-item > button {
