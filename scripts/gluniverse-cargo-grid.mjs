@@ -439,6 +439,11 @@ function makeId(prefix) {
   return `${prefix}-${id}`;
 }
 
+function resolveUuid(uuid) {
+  const fn = globalThis.foundry?.utils?.fromUuid ?? globalThis.fromUuid;
+  return typeof fn === "function" ? fn(uuid) : Promise.resolve(null);
+}
+
 function localize(key, fallback) {
   const text = game.i18n?.localize?.(key);
   return text && text !== key ? text : fallback;
@@ -1650,7 +1655,7 @@ class CargoBoardWindow {
     }
     const uuid = dropped.uuid || dropped.documentUuid;
     if (!uuid || dropped.type !== "Item") return;
-    const item = await fromUuid(uuid);
+    const item = await resolveUuid(uuid);
     if (!item) return;
     this.droppedItem = snapshotItem(item);
     this.quickCargoDraft = this.createQuickCargoDraft({
@@ -2153,7 +2158,7 @@ class CargoBoardWindow {
   async openLinkedItem(cargoId) {
     const cargo = getActiveMission()?.cargo?.[cargoId];
     if (!cargo?.linkedItem?.uuid) return;
-    const item = await fromUuid(cargo.linkedItem.uuid);
+    const item = await resolveUuid(cargo.linkedItem.uuid);
     item?.sheet?.render?.(true);
   }
 
@@ -2277,116 +2282,106 @@ function notifyWarn(message) {
   globalThis.ui?.notifications?.warn?.(message);
 }
 
-function confirmDialog({ title, content }) {
-  if (!globalThis.Dialog) {
-    notifyWarn("Foundry Dialog is not available.");
-    return Promise.resolve(false);
-  }
-  return new Promise(resolve => {
-    new globalThis.Dialog({
-      title,
-      content,
-      buttons: {
-        ok: {
-          label: "Confirm",
-          icon: '<i class="fa-solid fa-check"></i>',
-          callback: () => resolve(true)
-        },
-        cancel: {
-          label: "Cancel",
-          icon: '<i class="fa-solid fa-xmark"></i>',
-          callback: () => resolve(false)
-        }
-      },
-      default: "ok",
-      close: () => resolve(false)
-    }).render(true);
-  });
+function getDialogV2() {
+  return globalThis.foundry?.applications?.api?.DialogV2 ?? null;
 }
 
-function promptTextDialog({ title, label, value = "" }) {
-  if (!globalThis.Dialog) {
+async function confirmDialog({ title, content }) {
+  const DialogV2 = getDialogV2();
+  if (!DialogV2) {
     notifyWarn("Foundry Dialog is not available.");
-    return Promise.resolve(null);
+    return false;
   }
-  return new Promise(resolve => {
-    new globalThis.Dialog({
-      title,
-      content: `
-        <form class="glucargo-dialog-form">
-          <label>${escapeHtml(label)}<input name="value" type="text" value="${escapeAttr(value)}" autofocus></label>
-        </form>
-      `,
-      buttons: {
-        ok: {
-          label: "Save",
-          icon: '<i class="fa-solid fa-check"></i>',
-          callback: html => {
-            const form = getDialogRoot(html)?.querySelector("form");
-            resolve(String(new FormData(form).get("value") ?? "").trim());
-          }
-        },
-        cancel: {
-          label: "Cancel",
-          icon: '<i class="fa-solid fa-xmark"></i>',
-          callback: () => resolve(null)
-        }
-      },
-      default: "ok",
-      close: () => resolve(null)
-    }).render(true);
+  const result = await DialogV2.confirm({
+    window: { title },
+    content,
+    modal: true,
+    rejectClose: false
   });
+  return result === true;
 }
 
-function containerDialog({ title, container = null }) {
-  if (!globalThis.Dialog) {
+async function promptTextDialog({ title, label, value = "" }) {
+  const DialogV2 = getDialogV2();
+  if (!DialogV2) {
     notifyWarn("Foundry Dialog is not available.");
-    return Promise.resolve(null);
+    return null;
+  }
+  const result = await DialogV2.wait({
+    window: { title },
+    modal: true,
+    rejectClose: false,
+    content: `
+      <div class="glucargo-dialog-form">
+        <label>${escapeHtml(label)}<input name="value" type="text" value="${escapeAttr(value)}" autofocus></label>
+      </div>
+    `,
+    buttons: [
+      {
+        action: "ok",
+        label: "Save",
+        icon: "fa-solid fa-check",
+        default: true,
+        callback: (_event, button) => String(button.form?.elements?.value?.value ?? "").trim()
+      },
+      {
+        action: "cancel",
+        label: "Cancel",
+        icon: "fa-solid fa-xmark",
+        callback: () => null
+      }
+    ]
+  });
+  return typeof result === "string" ? result : null;
+}
+
+async function containerDialog({ title, container = null }) {
+  const DialogV2 = getDialogV2();
+  if (!DialogV2) {
+    notifyWarn("Foundry Dialog is not available.");
+    return null;
   }
   const width = Number(container?.width ?? 10);
   const height = Number(container?.height ?? 6);
-  return new Promise(resolve => {
-    new globalThis.Dialog({
-      title,
-      content: `
-        <form class="glucargo-dialog-form">
-          <label>Name<input name="name" type="text" value="${escapeAttr(container?.name ?? "Extraction Case")}" required></label>
-          <div class="glucargo-dialog-grid">
-            <label>Width<input name="width" type="number" min="1" max="30" value="${width}"></label>
-            <label>Height<input name="height" type="number" min="1" max="20" value="${height}"></label>
-          </div>
-          <label class="glucargo-dialog-check"><input name="locked" type="checkbox" ${container?.locked ? "checked" : ""}> Locked</label>
-        </form>
-      `,
-      buttons: {
-        ok: {
-          label: "Save",
-          icon: '<i class="fa-solid fa-floppy-disk"></i>',
-          callback: html => {
-            const form = getDialogRoot(html)?.querySelector("form");
-            const formData = new FormData(form);
-            resolve({
-              name: String(formData.get("name") || "Extraction Case").trim(),
-              width: Math.max(1, Math.min(30, Number(formData.get("width") || 10))),
-              height: Math.max(1, Math.min(20, Number(formData.get("height") || 6))),
-              locked: formData.get("locked") === "on"
-            });
-          }
-        },
-        cancel: {
-          label: "Cancel",
-          icon: '<i class="fa-solid fa-xmark"></i>',
-          callback: () => resolve(null)
+  const result = await DialogV2.wait({
+    window: { title },
+    modal: true,
+    rejectClose: false,
+    content: `
+      <div class="glucargo-dialog-form">
+        <label>Name<input name="name" type="text" value="${escapeAttr(container?.name ?? "Extraction Case")}" required></label>
+        <div class="glucargo-dialog-grid">
+          <label>Width<input name="width" type="number" min="1" max="30" value="${width}"></label>
+          <label>Height<input name="height" type="number" min="1" max="20" value="${height}"></label>
+        </div>
+        <label class="glucargo-dialog-check"><input name="locked" type="checkbox" ${container?.locked ? "checked" : ""}> Locked</label>
+      </div>
+    `,
+    buttons: [
+      {
+        action: "ok",
+        label: "Save",
+        icon: "fa-solid fa-floppy-disk",
+        default: true,
+        callback: (_event, button) => {
+          const elements = button.form?.elements ?? {};
+          return {
+            name: String(elements.name?.value || "Extraction Case").trim(),
+            width: Math.max(1, Math.min(30, Number(elements.width?.value || 10))),
+            height: Math.max(1, Math.min(20, Number(elements.height?.value || 6))),
+            locked: elements.locked?.checked === true
+          };
         }
       },
-      default: "ok",
-      close: () => resolve(null)
-    }).render(true);
+      {
+        action: "cancel",
+        label: "Cancel",
+        icon: "fa-solid fa-xmark",
+        callback: () => null
+      }
+    ]
   });
-}
-
-function getDialogRoot(html) {
-  return html?.[0] ?? html;
+  return result && typeof result === "object" ? result : null;
 }
 
 function cargoImage(cargo) {
