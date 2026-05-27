@@ -1,6 +1,6 @@
 # GLUniverse Cargo Grid
 
-A Foundry VTT v13 module for mission-scoped cargo packing.
+A Foundry VTT v14 module for mission-scoped cargo packing.
 
 ## Installation
 
