@@ -1,54 +1,115 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   GLUniverse Cargo Grid — Arcane Glass Design System
+   GLUniverse Cargo Grid — "Etched Glass" Design System
    Per-cell polyomino rendering on a frosted-glass logistics console.
-   Aesthetic shared with GLUniverse Clocks & Tracker: Oxanium type,
-   lavender-blue glow, deep navy glass, soft rounded panels, springy motion.
-   Design tokens use the --glucargo-* namespace.
+   Canonical GL Universe look: liquid glass material (frosted, beveled,
+   inner-lit panels) with an Endfield drafting layer etched on top —
+   one cut corner (chamfer), L-bracket registration marks, micro-tracked
+   technical labels, 1px precision rules of light, signal-amber ceremony.
+   Shared tokens use the --gl-* namespace; module-local --glucargo-* aliases
+   point at them so the existing markup keeps working.
    ═══════════════════════════════════════════════════════════════════════ */
-@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&family=Share+Tech+Mono&display=swap');
 
-/* ─── Design Tokens ─────────────────────────────────────────────────── */
+/* ─── Canonical GL tokens (§2, §6.1) ────────────────────────────────── */
 :root {
-  --glucargo-ink: #080b11;
-  --glucargo-ink-2: #0a0e15;
+  /* Ink ramp — surfaces */
+  --gl-ink-0: #02070b;
+  --gl-ink-1: #080b11;
+  --gl-ink-2: #0b0f17;
+  --gl-ink-3: #161d2c;
+
+  /* Text */
+  --gl-text: #eef1f7;
+  --gl-text-bright: #f3fbff;
+  --gl-text-dim: #98a2b6;
+  --gl-text-faint: rgba(243, 251, 255, 0.38);
+
+  /* Lines & rims */
+  --gl-hair: rgba(255, 255, 255, 0.08);
+  --gl-edge: rgba(255, 255, 255, 0.13);
+  --gl-line-strong: rgba(244, 252, 255, 0.55);
+
+  /* Fixed semantic accents */
+  --gl-signal: #ffd24a;
+  --gl-signal-hot: #ffe070;
+  --gl-cyan: #5eeaff;
+  --gl-hazard: #ff4a52;
+  --gl-good: #5fdb92;
+  --gl-violet: #b497ff;
+  --gl-mission: #37d99a;
+
+  /* Dynamic accent channel — cargo grid reads cyan as its system identity */
+  --gl-accent: var(--gl-cyan);
+
+  /* Derived glows (always color-mix, never hand-picked) */
+  --gl-glow: color-mix(in srgb, var(--gl-accent) 45%, transparent);
+  --gl-bloom: color-mix(in srgb, var(--gl-accent) 18%, transparent);
+
+  /* Holographic ramp (premium single-element highlight) */
+  --gl-holo-a: var(--gl-accent);
+  --gl-holo-b: var(--gl-violet);
+  --gl-holo-c: #ff66b3;
+
+  /* Typography — two voices, strict roles (§5) */
+  --gl-font-display: "Oxanium", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --gl-font-tech: "Bahnschrift", "Share Tech Mono", "JetBrains Mono", Consolas, monospace;
+
+  /* Motion (§6.1) */
+  --gl-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --gl-snap: cubic-bezier(0.2, 1.35, 0.22, 1);
+  --gl-pop: cubic-bezier(0.34, 1.56, 0.5, 1);
+  --gl-exit: cubic-bezier(0.55, 0, 0.84, 0);
+  --gl-d-quick: 180ms;
+  --gl-d-move: 420ms;
+  --gl-d-reveal: 620ms;
+  --gl-d-splash: 720ms;
+  --gl-breathe: 2.6s;
+  --gl-dread: 3.2s;
+
+  /* ── Module-local aliases (keep --glucargo-* markup working) ─────── */
+  --glucargo-ink: var(--gl-ink-1);
+  --glucargo-ink-2: var(--gl-ink-2);
   --glucargo-panel: rgba(22, 29, 44, 0.78);
   --glucargo-panel-soft: rgba(20, 27, 40, 0.66);
   --glucargo-glass: rgba(16, 22, 34, 0.52);
-  --glucargo-line: rgba(255, 255, 255, 0.10);
-  --glucargo-line-strong: rgba(255, 255, 255, 0.28);
-  --glucargo-text: #eef1f7;
-  --glucargo-muted: rgba(152, 162, 182, 0.92);
-  --glucargo-dim: rgba(152, 162, 182, 0.55);
-  --glucargo-cyan: #6b86d6;
-  --glucargo-green: #37d99a;
-  --glucargo-red: #e0584f;
-  --glucargo-amber: #ffb12d;
-  --glucargo-violet: #9d8fe0;
+  --glucargo-line: var(--gl-edge);
+  --glucargo-line-strong: var(--gl-line-strong);
+  --glucargo-text: var(--gl-text);
+  --glucargo-muted: var(--gl-text-dim);
+  --glucargo-dim: var(--gl-text-faint);
+  --glucargo-cyan: var(--gl-accent);
+  --glucargo-green: var(--gl-good);
+  --glucargo-red: var(--gl-hazard);
+  --glucargo-amber: var(--gl-signal);
+  --glucargo-violet: var(--gl-violet);
 
-  --glucargo-glow: rgba(120, 150, 225, 0.5);
-  --glucargo-glow-soft: rgba(120, 150, 225, 0.18);
+  --glucargo-glow: var(--gl-glow);
+  --glucargo-glow-soft: var(--gl-bloom);
 
-  --glucargo-holo-a: var(--glucargo-cyan);
-  --glucargo-holo-b: var(--glucargo-violet);
-  --glucargo-holo-c: #8ea6ff;
+  --glucargo-holo-a: var(--gl-holo-a);
+  --glucargo-holo-b: var(--gl-holo-b);
+  --glucargo-holo-c: var(--gl-holo-c);
 
-  --glucargo-font-ui: "Oxanium", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --glucargo-font-display: "Oxanium", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --glucargo-font-code: "Oxanium", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+  --glucargo-font-ui: var(--gl-font-display);
+  --glucargo-font-display: var(--gl-font-display);
+  --glucargo-font-code: var(--gl-font-tech);
 
-  --glucargo-ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --glucargo-snap: cubic-bezier(0.34, 1.5, 0.4, 1);
-  --glucargo-exit: cubic-bezier(0.55, 0, 0.84, 0);
+  --glucargo-ease: var(--gl-ease);
+  --glucargo-snap: var(--gl-snap);
+  --glucargo-pop: var(--gl-pop);
+  --glucargo-exit: var(--gl-exit);
 
-  --glucargo-d-quick: 160ms;
-  --glucargo-d-card: 420ms;
-  --glucargo-d-splash: 620ms;
+  --glucargo-d-quick: var(--gl-d-quick);
+  --glucargo-d-card: var(--gl-d-move);
+  --glucargo-d-splash: var(--gl-d-reveal);
 
-  /* Soft rounded radii — replace the previous angular clip-path corners */
-  --glucargo-r-lg: 16px;
+  /* Chamfer cut size + radii. Large glass keeps soft radii on three
+     corners and takes the diagonal cut on one (§4.1). */
+  --gl-cut: 14px;
+  --glucargo-r-lg: 15px;
   --glucargo-r-md: 11px;
   --glucargo-r-sm: 8px;
-  --glucargo-r-xs: 6px;
+  --glucargo-r-xs: 7px;
 
   --glucargo-metal-hi: rgba(90, 110, 150, 0.55);
   --glucargo-metal-lo: rgba(14, 18, 28, 0.85);
@@ -78,7 +139,7 @@
   height: 30px;
   padding: 0 16px 0 12px;
   border: 0;
-  border-bottom: 1px solid rgba(120, 150, 225, 0.3);
+  border-bottom: 1px solid color-mix(in srgb, var(--gl-accent) 30%, transparent);
   border-radius: 0 0 8px 8px;
   color: var(--glucargo-text);
   font-family: var(--glucargo-font-code);
@@ -87,11 +148,11 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   background:
-    linear-gradient(180deg, rgba(120, 150, 225, 0.14), rgba(120, 150, 225, 0.04)),
+    linear-gradient(180deg, color-mix(in srgb, var(--gl-accent) 14%, transparent), color-mix(in srgb, var(--gl-accent) 4%, transparent)),
     var(--glucargo-ink);
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.5),
-    0 0 12px rgba(120, 150, 225, 0.08),
+    0 0 12px color-mix(in srgb, var(--gl-accent) 8%, transparent),
     inset 0 -1px 0 rgba(255, 255, 255, 0.04);
   cursor: pointer;
   transition: transform var(--glucargo-d-quick) var(--glucargo-ease), box-shadow var(--glucargo-d-quick) var(--glucargo-ease);
@@ -113,9 +174,9 @@
   transform: translateX(-50%) translateY(2px);
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.6),
-    0 0 20px rgba(120, 150, 225, 0.16),
+    0 0 20px color-mix(in srgb, var(--gl-accent) 16%, transparent),
     inset 0 -1px 0 rgba(255, 255, 255, 0.06);
-  border-bottom-color: rgba(120, 150, 225, 0.6);
+  border-bottom-color: color-mix(in srgb, var(--gl-accent) 60%, transparent);
 }
 
 .glucargo-fab:hover::before {
@@ -125,11 +186,11 @@
 .glucargo-fab i {
   font-size: 11px;
   color: var(--glucargo-cyan);
-  filter: drop-shadow(0 0 4px rgba(120, 150, 225, 0.4));
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--gl-accent) 40%, transparent));
 }
 
 .glucargo-fab span {
-  text-shadow: 0 0 8px rgba(120, 150, 225, 0.3);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--gl-accent) 30%, transparent);
 }
 
 /* ─── Window Shell ──────────────────────────────────────────────────── */
@@ -147,28 +208,42 @@
   color: var(--glucargo-text);
   font-family: var(--glucargo-font-ui);
   font-size: 12px;
+  font-variant-numeric: tabular-nums;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 30%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.22)),
     linear-gradient(150deg, #161d2c, #080b11 72%);
   border: 1px solid var(--glucargo-line);
+  /* Inset light catch / depth stay in box-shadow; the far drop + accent
+     bloom move to filter so they follow the chamfer silhouette (clip-path
+     clips box-shadows but filters apply post-clip — §9.1). */
   box-shadow:
-    0 30px 80px rgba(0, 0, 0, 0.62),
     0 2px 0 rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 -14px 30px rgba(0, 0, 0, 0.34),
-    0 0 48px var(--glucargo-glow-soft);
+    inset 0 -14px 30px rgba(0, 0, 0, 0.34);
   border-radius: var(--glucargo-r-lg);
+  /* One cut corner — the family signature (§4.1). Soft radii on three
+     corners, a diagonal chamfer on the top-right. */
+  clip-path: polygon(0 0, calc(100% - var(--gl-cut)) 0, 100% var(--gl-cut), 100% 100%, 0 100%);
+  filter:
+    drop-shadow(0 30px 80px rgba(0, 0, 0, 0.62))
+    drop-shadow(0 0 24px var(--glucargo-glow-soft));
   backdrop-filter: blur(16px) saturate(1.15);
   contain: layout style;
-  animation: glucargo-window-in 0.5s var(--glucargo-snap);
+  animation: glucargo-window-in var(--gl-d-reveal) var(--glucargo-snap);
 }
 
 /* Keep dragging buttery: drop the costly backdrop blur while the window
-   moves and promote it to its own compositor layer. */
+   moves and promote it to its own compositor layer. The chamfer bloom
+   (a wide drop-shadow filter) is also collapsed to a cheap shadow so it
+   isn't re-rasterized every frame. */
 .glucargo-window.is-dragging,
 .glucargo-minimap.is-dragging {
   backdrop-filter: none;
+}
+
+.glucargo-window.is-dragging {
+  filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.5));
 }
 
 .glucargo-window::before {
@@ -180,6 +255,23 @@
     linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 36%, rgba(0, 0, 0, 0.10) 100%);
   pointer-events: none;
   z-index: 0;
+}
+
+/* 1px accent hairline riding the diagonal cut (§4.1). Geometry: a line of
+   length cut·√2 centred on the chamfer midpoint, rotated onto the diagonal. */
+.glucargo-window::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--gl-cut) * 0.5);
+  right: calc(var(--gl-cut) * -0.207);
+  width: calc(var(--gl-cut) * 1.414);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--gl-accent) 85%, #fff) 55%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--gl-accent) 60%, transparent);
+  transform: rotate(45deg);
+  transform-origin: center;
+  pointer-events: none;
+  z-index: 3;
 }
 
 .glucargo-window > * {
@@ -205,14 +297,14 @@
   color: var(--glucargo-text);
   font-family: var(--glucargo-font-ui);
   background:
-    linear-gradient(135deg, rgba(120, 150, 225, 0.18), transparent 24%),
+    linear-gradient(135deg, color-mix(in srgb, var(--gl-accent) 18%, transparent), transparent 24%),
     linear-gradient(315deg, rgba(180, 151, 255, 0.10), transparent 34%),
     linear-gradient(180deg, rgba(18, 34, 46, 0.96), rgba(2, 7, 11, 0.98));
-  border: 1px solid rgba(120, 150, 225, 0.34);
+  border: 1px solid color-mix(in srgb, var(--gl-accent) 34%, transparent);
   box-shadow:
     0 22px 60px rgba(0, 0, 0, 0.68),
     0 0 0 1px rgba(0, 0, 0, 0.70),
-    0 0 24px rgba(120, 150, 225, 0.12),
+    0 0 24px color-mix(in srgb, var(--gl-accent) 12%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.10),
     inset 0 -1px 0 rgba(0, 0, 0, 0.72);
   border-radius: var(--glucargo-r-md);
@@ -229,7 +321,7 @@
 
 .glucargo-minimap::before {
   background:
-    linear-gradient(90deg, transparent 0 10px, rgba(120, 150, 225, 0.48) 10px 34px, transparent 34px),
+    linear-gradient(90deg, transparent 0 10px, color-mix(in srgb, var(--gl-accent) 48%, transparent) 10px 34px, transparent 34px),
     linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 42%, rgba(0, 0, 0, 0.18));
   opacity: 0.72;
 }
@@ -253,9 +345,9 @@
   justify-content: space-between;
   height: 26px;
   padding: 0 5px 0 9px;
-  border-bottom: 1px solid rgba(120, 150, 225, 0.18);
+  border-bottom: 1px solid color-mix(in srgb, var(--gl-accent) 18%, transparent);
   background:
-    linear-gradient(90deg, rgba(120, 150, 225, 0.22), transparent 54%),
+    linear-gradient(90deg, color-mix(in srgb, var(--gl-accent) 22%, transparent), transparent 54%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent),
     rgba(2, 7, 11, 0.74);
   cursor: grab;
@@ -268,7 +360,7 @@
   right: 28px;
   bottom: 7px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(120, 150, 225, 0.48), transparent);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--gl-accent) 48%, transparent), transparent);
   opacity: 0.54;
 }
 
@@ -279,7 +371,7 @@
 .glucargo-minimap__bar > i {
   color: var(--glucargo-cyan);
   font-size: 11px;
-  filter: drop-shadow(0 0 6px rgba(120, 150, 225, 0.48));
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gl-accent) 48%, transparent));
 }
 
 .glucargo-minimap__bar button {
@@ -299,8 +391,8 @@
 
 .glucargo-minimap__bar button:hover {
   color: var(--glucargo-text);
-  background: rgba(120, 150, 225, 0.14);
-  box-shadow: 0 0 8px rgba(120, 150, 225, 0.12);
+  background: color-mix(in srgb, var(--gl-accent) 14%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--gl-accent) 12%, transparent);
 }
 
 .glucargo-minimap__frame {
@@ -309,7 +401,7 @@
   overflow: auto;
   padding: 10px;
   background:
-    radial-gradient(120% 80% at 50% 0%, rgba(120, 150, 225, 0.08), transparent 62%),
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--gl-accent) 8%, transparent), transparent 62%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 36%),
     rgba(4, 10, 15, 0.96);
 }
@@ -326,7 +418,7 @@
     linear-gradient(145deg, rgba(255, 255, 255, 0.05), transparent 30%),
     rgba(4, 9, 13, 0.98);
   box-shadow:
-    0 0 0 1px rgba(120, 150, 225, 0.22),
+    0 0 0 1px color-mix(in srgb, var(--gl-accent) 22%, transparent),
     0 0 0 2px rgba(0, 0, 0, 0.72),
     0 8px 20px rgba(0, 0, 0, 0.36),
     inset 0 0 12px rgba(0, 0, 0, 0.58);
@@ -343,8 +435,8 @@
 
 .glucargo-minimap__grid::before {
   background:
-    linear-gradient(90deg, rgba(120, 150, 225, 0.16), transparent 1px),
-    linear-gradient(180deg, rgba(120, 150, 225, 0.12), transparent 1px);
+    linear-gradient(90deg, color-mix(in srgb, var(--gl-accent) 16%, transparent), transparent 1px),
+    linear-gradient(180deg, color-mix(in srgb, var(--gl-accent) 12%, transparent), transparent 1px);
   background-size: var(--glucargo-mini-cell) var(--glucargo-mini-cell);
   opacity: 0.26;
 }
@@ -376,10 +468,10 @@
 
 .glucargo-minimap__cell.is-broken {
   background:
-    repeating-linear-gradient(135deg, rgba(255, 93, 108, 0.34) 0 2px, rgba(18, 7, 12, 0.96) 2px 5px),
-    radial-gradient(circle at 50% 50%, rgba(255, 93, 108, 0.18), transparent 62%),
+    repeating-linear-gradient(135deg, color-mix(in srgb, var(--gl-hazard) 34%, transparent) 0 2px, rgba(18, 7, 12, 0.96) 2px 5px),
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--gl-hazard) 18%, transparent), transparent 62%),
     rgba(18, 7, 12, 0.96);
-  border-color: rgba(255, 93, 108, 0.36);
+  border-color: color-mix(in srgb, var(--gl-hazard) 36%, transparent);
 }
 
 .glucargo-minimap__tile {
@@ -427,11 +519,12 @@
     inset 1px 1px 0 color-mix(in srgb, var(--cargo-accent) 50%, rgba(255, 255, 255, 0.22)),
     inset -1px -1px 0 rgba(0, 0, 0, 0.48),
     inset 0 -3px 6px rgba(0, 0, 0, 0.18),
-    0 0 10px rgba(255, 93, 108, 0.24);
+    0 0 10px color-mix(in srgb, var(--gl-hazard) 24%, transparent);
 }
 
 /* ─── Titlebar ──────────────────────────────────────────────────────── */
 .glucargo-titlebar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -440,11 +533,25 @@
   padding: 8px 12px 8px 16px;
   border-bottom: 1px solid var(--glucargo-line);
   background:
-    linear-gradient(90deg, rgba(120, 150, 225, 0.12), transparent 46%),
+    linear-gradient(90deg, color-mix(in srgb, var(--gl-accent) 12%, transparent), transparent 46%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 60%),
     rgba(10, 14, 21, 0.55);
   cursor: grab;
   overflow: hidden;
+}
+
+/* Precision rule of light along the bottom edge (§4.3) */
+.glucargo-titlebar::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gl-accent) 24%, var(--gl-accent) 76%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--gl-accent) 70%, transparent);
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .glucargo-titlebar::after {
@@ -477,12 +584,13 @@
   height: 32px;
   color: #06101e;
   background: linear-gradient(135deg, var(--glucargo-cyan), var(--glucargo-violet));
-  border-radius: var(--glucargo-r-sm);
+  /* Notched chip silhouette (§4.1) */
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
   box-shadow:
-    0 0 16px rgba(120, 150, 225, 0.4),
+    0 0 16px color-mix(in srgb, var(--gl-accent) 40%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
   font-size: 13px;
-  animation: glucargo-brand-breathe 3.6s ease-in-out infinite;
+  animation: glucargo-brand-breathe var(--gl-breathe) ease-in-out infinite;
 }
 
 .glucargo-brand div {
@@ -501,7 +609,7 @@
   text-transform: uppercase;
   white-space: nowrap;
   text-shadow:
-    0 0 12px rgba(120, 150, 225, 0.20),
+    0 0 12px color-mix(in srgb, var(--gl-accent) 20%, transparent),
     0 2px 6px rgba(0, 0, 0, 0.8);
 }
 
@@ -511,8 +619,23 @@
   font-family: var(--glucargo-font-code);
   font-size: 9px;
   line-height: 1;
-  letter-spacing: 0.10em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
+}
+
+/* Kicker tick mark — a short rule of light preceding the label (§4.2) */
+.glucargo-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.glucargo-kicker::before {
+  content: "";
+  width: 13px;
+  height: 1px;
+  background: var(--gl-accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--gl-accent) 80%, transparent);
 }
 
 .glucargo-titlebar__actions,
@@ -566,10 +689,15 @@
   overflow: hidden;
   font-family: var(--glucargo-font-ui);
   font-weight: 650;
+  font-size: 11px;
   line-height: 1.05;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   text-overflow: ellipsis;
   cursor: pointer;
   border-radius: var(--glucargo-r-xs);
+  /* Small notch top-left — chips/buttons go notched (§4.1). */
+  clip-path: polygon(6px 0, 100% 0, 100% 100%, 0 100%, 0 6px);
   transition:
     transform 110ms var(--glucargo-ease),
     border-color 130ms var(--glucargo-ease),
@@ -593,8 +721,8 @@
 }
 
 .glucargo-window :where(button:hover:not(:disabled)) {
-  border-color: rgba(120, 150, 225, 0.55);
-  background: rgba(120, 150, 225, 0.14);
+  border-color: color-mix(in srgb, var(--gl-accent) 55%, transparent);
+  background: color-mix(in srgb, var(--gl-accent) 14%, transparent);
   box-shadow: 0 0 14px var(--glucargo-glow-soft);
   transform: translateY(-1px);
 }
@@ -604,10 +732,10 @@
 }
 
 .glucargo-window :where(button.is-on) {
-  border-color: rgba(120, 150, 225, 0.72);
+  border-color: color-mix(in srgb, var(--gl-accent) 72%, transparent);
   color: var(--glucargo-cyan);
-  background: rgba(120, 150, 225, 0.14);
-  box-shadow: inset 0 0 12px rgba(120, 150, 225, 0.08);
+  background: color-mix(in srgb, var(--gl-accent) 14%, transparent);
+  box-shadow: inset 0 0 12px color-mix(in srgb, var(--gl-accent) 8%, transparent);
 }
 
 .glucargo-window :where(button:disabled) {
@@ -629,7 +757,7 @@
 .glucargo-window input:focus,
 .glucargo-window select:focus {
   border-color: var(--glucargo-cyan);
-  box-shadow: 0 0 0 2px rgba(120, 150, 225, 0.12), 0 0 12px rgba(120, 150, 225, 0.06);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gl-accent) 12%, transparent), 0 0 12px color-mix(in srgb, var(--gl-accent) 6%, transparent);
 }
 
 .glucargo-icon-button {
@@ -706,16 +834,35 @@
 /* ─── Panels ────────────────────────────────────────────────────────── */
 .glucargo-panel,
 .glucargo-grid-panel {
+  position: relative;
   min-height: 0;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 32%),
     var(--glucargo-panel);
   border: 1px solid var(--glucargo-line);
   border-radius: var(--glucargo-r-md);
+  /* Chamfered top-right — the cut corner signature on panel glass (§4.1). */
+  clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 0 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     inset 0 -10px 22px rgba(0, 0, 0, 0.28),
     0 10px 26px rgba(0, 0, 0, 0.22);
+}
+
+/* L-bracket registration mark, top-left corner (§4.2) */
+.glucargo-panel::after,
+.glucargo-grid-panel::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  width: 8px;
+  height: 8px;
+  border-top: 1px solid var(--gl-line-strong);
+  border-left: 1px solid var(--gl-line-strong);
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .glucargo-panel {
@@ -752,8 +899,15 @@
   color: var(--glucargo-muted);
   font-family: var(--glucargo-font-code);
   font-size: 10px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+/* Triangle bullet marker before the section label (§4.2) */
+.glucargo-panel__head > span:first-child::before {
+  content: "▸ ";
+  color: var(--gl-accent);
+  opacity: 0.7;
 }
 
 .glucargo-panel--flush .glucargo-panel__head {
@@ -787,7 +941,8 @@
   gap: 0;
   padding: 0;
   border: 1px solid var(--glucargo-line);
-  border-radius: var(--glucargo-r-sm);
+  /* Card silhouette — full notch on the top-right (§4.1) */
+  clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 0 100%);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 36%),
     linear-gradient(160deg, rgba(28, 37, 56, 0.9), rgba(8, 11, 17, 0.95));
@@ -801,7 +956,13 @@
 .glucargo-mission-row,
 .glucargo-floor-item > button,
 .glucargo-manifest-card > button {
-  border-radius: var(--glucargo-r-sm);
+  /* Notched card corner (§4.1) */
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%);
+  /* Content-bearing cards carry names — let child elements set their own
+     casing rather than inheriting the control-label uppercase/tracking. */
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
 }
 
 .glucargo-container-card::before {
@@ -818,7 +979,7 @@
 
 .glucargo-container-card:hover::before {
   background: var(--glucargo-cyan);
-  box-shadow: 0 0 12px rgba(120, 150, 225, 0.32);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--gl-accent) 32%, transparent);
 }
 
 .glucargo-container-card.is-active::before {
@@ -838,6 +999,10 @@
   background: transparent !important;
   text-align: left;
   border-radius: 0 !important;
+  /* Inner fill follows the card's own chamfer, not its own notch. */
+  clip-path: none !important;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .glucargo-container-card__actions {
@@ -857,18 +1022,18 @@
 }
 
 .glucargo-container-card.is-active {
-  border-color: rgba(120, 150, 225, 0.55);
+  border-color: color-mix(in srgb, var(--gl-accent) 55%, transparent);
   background:
-    linear-gradient(90deg, rgba(120, 150, 225, 0.06), transparent),
+    linear-gradient(90deg, color-mix(in srgb, var(--gl-accent) 6%, transparent), transparent),
     linear-gradient(180deg, rgba(13, 24, 34, 0.9), rgba(4, 8, 12, 0.95));
   box-shadow:
-    inset 0 1px 0 rgba(120, 150, 225, 0.12),
+    inset 0 1px 0 color-mix(in srgb, var(--gl-accent) 12%, transparent),
     inset 0 -1px 0 rgba(0, 0, 0, 0.4),
-    0 0 20px rgba(120, 150, 225, 0.08);
+    0 0 20px color-mix(in srgb, var(--gl-accent) 8%, transparent);
 }
 
 .glucargo-mission-row.is-active {
-  border-color: rgba(120, 150, 225, 0.7);
+  border-color: color-mix(in srgb, var(--gl-accent) 70%, transparent);
   box-shadow: inset 3px 0 0 var(--glucargo-cyan);
 }
 
@@ -904,7 +1069,7 @@
   display: block;
   height: 100%;
   background: linear-gradient(90deg, var(--glucargo-cyan), var(--glucargo-green));
-  box-shadow: 0 0 8px rgba(120, 150, 225, 0.32);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--gl-accent) 32%, transparent);
   transition: width 0.5s var(--glucargo-snap);
   position: relative;
 }
@@ -984,7 +1149,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   text-shadow:
-    0 0 14px rgba(120, 150, 225, 0.14),
+    0 0 14px color-mix(in srgb, var(--gl-accent) 14%, transparent),
     0 2px 6px rgba(0, 0, 0, 0.7);
 }
 
@@ -1060,18 +1225,18 @@
 .glucargo-cell.is-broken {
   cursor: not-allowed;
   border-color:
-    rgba(255, 93, 108, 0.78)
+    color-mix(in srgb, var(--gl-hazard) 78%, transparent)
     rgba(83, 20, 31, 0.9)
     rgba(83, 20, 31, 0.9)
-    rgba(255, 93, 108, 0.58);
+    color-mix(in srgb, var(--gl-hazard) 58%, transparent);
   background:
-    repeating-linear-gradient(135deg, rgba(255, 93, 108, 0.26) 0 5px, rgba(15, 6, 10, 0.76) 5px 10px),
-    radial-gradient(circle at 50% 50%, rgba(255, 93, 108, 0.16), transparent 62%),
+    repeating-linear-gradient(135deg, color-mix(in srgb, var(--gl-hazard) 26%, transparent) 0 5px, rgba(15, 6, 10, 0.76) 5px 10px),
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--gl-hazard) 16%, transparent), transparent 62%),
     rgba(18, 7, 12, 0.96);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.03),
-    inset 0 0 14px rgba(255, 93, 108, 0.18),
-    0 0 10px rgba(255, 93, 108, 0.12);
+    inset 0 0 14px color-mix(in srgb, var(--gl-hazard) 18%, transparent),
+    0 0 10px color-mix(in srgb, var(--gl-hazard) 12%, transparent);
 }
 
 .glucargo-cell.is-broken::before {
@@ -1082,39 +1247,39 @@
   background:
     linear-gradient(45deg, transparent calc(50% - 1px), rgba(255, 217, 221, 0.88) calc(50% - 1px), rgba(255, 217, 221, 0.88) calc(50% + 1px), transparent calc(50% + 1px)),
     linear-gradient(-45deg, transparent calc(50% - 1px), rgba(255, 217, 221, 0.88) calc(50% - 1px), rgba(255, 217, 221, 0.88) calc(50% + 1px), transparent calc(50% + 1px));
-  filter: drop-shadow(0 0 4px rgba(255, 93, 108, 0.5));
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--gl-hazard) 50%, transparent));
 }
 
 .glucargo-cell:hover:not(:disabled) {
   background:
-    radial-gradient(circle at 50% 50%, rgba(120, 150, 225, 0.12), transparent 60%),
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--gl-accent) 12%, transparent), transparent 60%),
     linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, transparent 40%, rgba(0, 0, 0, 0.08) 100%),
     rgba(8, 16, 24, 0.94);
   box-shadow:
     inset 0 1px 3px rgba(0, 0, 0, 0.4),
-    inset 0 0 6px rgba(120, 150, 225, 0.06);
+    inset 0 0 6px color-mix(in srgb, var(--gl-accent) 6%, transparent);
   transform: none;
   border-color:
-    rgba(120, 150, 225, 0.3)
+    color-mix(in srgb, var(--gl-accent) 30%, transparent)
     var(--glucargo-metal-lo)
     var(--glucargo-metal-lo)
-    rgba(120, 150, 225, 0.3);
+    color-mix(in srgb, var(--gl-accent) 30%, transparent);
 }
 
 .glucargo-cell.is-broken:hover:not(:disabled) {
   border-color:
-    rgba(255, 93, 108, 0.9)
+    color-mix(in srgb, var(--gl-hazard) 90%, transparent)
     rgba(83, 20, 31, 0.95)
     rgba(83, 20, 31, 0.95)
-    rgba(255, 93, 108, 0.72);
+    color-mix(in srgb, var(--gl-hazard) 72%, transparent);
   background:
-    repeating-linear-gradient(135deg, rgba(255, 93, 108, 0.34) 0 5px, rgba(15, 6, 10, 0.76) 5px 10px),
-    radial-gradient(circle at 50% 50%, rgba(255, 93, 108, 0.22), transparent 62%),
+    repeating-linear-gradient(135deg, color-mix(in srgb, var(--gl-hazard) 34%, transparent) 0 5px, rgba(15, 6, 10, 0.76) 5px 10px),
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--gl-hazard) 22%, transparent), transparent 62%),
     rgba(18, 7, 12, 0.96);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.04),
-    inset 0 0 16px rgba(255, 93, 108, 0.24),
-    0 0 12px rgba(255, 93, 108, 0.18);
+    inset 0 0 16px color-mix(in srgb, var(--gl-hazard) 24%, transparent),
+    0 0 12px color-mix(in srgb, var(--gl-hazard) 18%, transparent);
 }
 
 .glucargo-grid-wrap.show-coords .glucargo-cell::after {
@@ -1353,11 +1518,11 @@
 }
 
 .glucargo-tile-cell.priority-critical {
-  border-color: color-mix(in srgb, var(--cargo-accent) 45%, rgba(255, 93, 108, 0.5));
+  border-color: color-mix(in srgb, var(--cargo-accent) 45%, color-mix(in srgb, var(--gl-hazard) 50%, transparent));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
     inset 0 -8px 16px rgba(0, 0, 0, 0.22),
-    0 0 14px rgba(255, 93, 108, 0.24);
+    0 0 14px color-mix(in srgb, var(--gl-hazard) 24%, transparent);
 }
 
 .glucargo-tile-cell.priority-critical:not([data-edges~="top"]) { border-top-color: transparent !important; }
@@ -1805,8 +1970,8 @@
 
 .glucargo-preview-cell.is-invalid {
   border-color: var(--glucargo-red);
-  background: rgba(255, 93, 108, 0.16);
-  box-shadow: 0 0 16px rgba(255, 93, 108, 0.22);
+  background: color-mix(in srgb, var(--gl-hazard) 16%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--gl-hazard) 22%, transparent);
   animation: glucargo-invalid-pulse 0.4s ease-out;
 }
 
@@ -1912,23 +2077,25 @@
 .glucargo-shape-cell.is-on {
   border-color: var(--glucargo-cyan);
   background: linear-gradient(135deg, var(--glucargo-cyan), #4ad9c0);
-  box-shadow: 0 0 10px rgba(120, 150, 225, 0.32);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--gl-accent) 32%, transparent);
 }
 
 .glucargo-primary {
   width: 100%;
-  color: var(--glucargo-ink) !important;
+  color: var(--gl-ink-0) !important;
   background: linear-gradient(90deg, var(--glucargo-cyan), var(--glucargo-green)) !important;
   border-color: transparent !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.04em;
-  box-shadow: 0 0 16px rgba(120, 150, 225, 0.18);
+  font-weight: 800 !important;
+  letter-spacing: 0.08em;
+  /* Bloom via filter so it survives the notch clip-path (§9.1). */
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--gl-accent) 30%, transparent));
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .glucargo-primary:hover:not(:disabled) {
-  box-shadow: 0 0 24px rgba(120, 150, 225, 0.32) !important;
-  filter: brightness(1.1);
+  filter:
+    brightness(1.1)
+    drop-shadow(0 0 18px color-mix(in srgb, var(--gl-accent) 45%, transparent)) !important;
 }
 
 /* ─── Floor Manifest ────────────────────────────────────────────────── */
@@ -2171,7 +2338,7 @@
 .glucargo-floor-item.priority-critical > button {
   box-shadow:
     inset 0 -2px 0 var(--glucargo-red),
-    0 0 10px rgba(255, 93, 108, 0.10),
+    0 0 10px color-mix(in srgb, var(--gl-hazard) 10%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
 }
 
@@ -2342,8 +2509,8 @@
 }
 
 .glucargo-manifest-card.priority-critical > button {
-  border-color: rgba(255, 93, 108, 0.62);
-  box-shadow: inset 3px 0 0 var(--glucargo-red), 0 0 18px rgba(255, 93, 108, 0.14);
+  border-color: color-mix(in srgb, var(--gl-hazard) 62%, transparent);
+  box-shadow: inset 3px 0 0 var(--glucargo-red), 0 0 18px color-mix(in srgb, var(--gl-hazard) 14%, transparent);
 }
 
 .glucargo-manifest-card__icon {
@@ -2408,7 +2575,7 @@
 
 .glucargo-priority.critical {
   background: var(--glucargo-red);
-  box-shadow: 0 0 10px rgba(255, 93, 108, 0.32);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--gl-hazard) 32%, transparent);
 }
 
 .glucargo-floor-lock {
@@ -2434,11 +2601,14 @@
     linear-gradient(135deg, color-mix(in srgb, var(--cargo-accent) 12%, transparent), transparent 40%),
     rgba(2, 7, 11, 0.96);
   border: 1px solid color-mix(in srgb, var(--cargo-accent) 36%, rgba(255, 255, 255, 0.12));
+  /* Chamfered top-right + active accent edge bar (§4.1, §7.3) */
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
   box-shadow:
     inset 3px 0 0 var(--cargo-accent),
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 18px 56px rgba(0, 0, 0, 0.28),
     0 0 14px color-mix(in srgb, var(--cargo-accent) 08%, transparent);
+  animation: glucargo-report-in var(--gl-d-move) var(--gl-ease) both;
 }
 
 .glucargo-detail__head {
@@ -2511,13 +2681,13 @@
 }
 
 .danger {
-  border-color: rgba(255, 93, 108, 0.42) !important;
+  border-color: color-mix(in srgb, var(--gl-hazard) 42%, transparent) !important;
   color: #ffc0c6 !important;
 }
 
 .danger:hover {
-  background: rgba(255, 93, 108, 0.14) !important;
-  box-shadow: 0 0 12px rgba(255, 93, 108, 0.12) !important;
+  background: color-mix(in srgb, var(--gl-hazard) 14%, transparent) !important;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--gl-hazard) 12%, transparent) !important;
 }
 
 /* ─── Empty States ──────────────────────────────────────────────────── */
@@ -2529,16 +2699,36 @@
 }
 
 .glucargo-empty-state__panel {
+  position: relative;
   width: min(520px, 100%);
   padding: 28px;
-  border: 1px solid rgba(120, 150, 225, 0.22);
+  border: 1px solid color-mix(in srgb, var(--gl-accent) 22%, transparent);
   background:
-    linear-gradient(135deg, rgba(120, 150, 225, 0.06), transparent 40%),
+    /* Blueprint grid behind the hero region (§4.6) */
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 28px 28px,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 28px 28px,
+    linear-gradient(135deg, color-mix(in srgb, var(--gl-accent) 6%, transparent), transparent 40%),
     rgba(7, 16, 24, 0.88);
+  /* Chamfered top-right (§4.1) */
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 24px 70px rgba(0, 0, 0, 0.36),
-    0 0 24px rgba(120, 150, 225, 0.06);
+    0 0 24px color-mix(in srgb, var(--gl-accent) 6%, transparent);
+}
+
+/* L-bracket on the empty-state panel (§4.2) */
+.glucargo-empty-state__panel::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 9px;
+  width: 10px;
+  height: 10px;
+  border-top: 1px solid var(--gl-line-strong);
+  border-left: 1px solid var(--gl-line-strong);
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .glucargo-empty-state h2 {
@@ -2597,44 +2787,121 @@
 /* ─── Chat Extraction Report ────────────────────────────────────────── */
 .glucargo-chat-report {
   --cargo-accent: var(--glucargo-cyan);
+  position: relative;
   overflow: hidden;
   margin: 2px 0;
   color: var(--glucargo-text);
   font-family: var(--glucargo-font-ui);
   background:
-    linear-gradient(135deg, rgba(120, 150, 225, 0.10), transparent 34%),
-    linear-gradient(315deg, rgba(180, 151, 255, 0.08), transparent 38%),
+    linear-gradient(135deg, color-mix(in srgb, var(--gl-accent) 10%, transparent), transparent 34%),
+    linear-gradient(315deg, color-mix(in srgb, var(--gl-violet) 10%, transparent), transparent 38%),
     rgba(2, 7, 11, 0.95);
-  border: 1px solid rgba(120, 150, 225, 0.30);
+  border: 1px solid color-mix(in srgb, var(--gl-accent) 30%, transparent);
+  /* Inset light catch stays; the drop + accent bloom move to filter so they
+     follow the chamfer instead of being clipped by it (§9.1). */
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
-    0 10px 34px rgba(0, 0, 0, 0.24);
-  border-radius: 10px;
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+  filter:
+    drop-shadow(0 10px 28px rgba(0, 0, 0, 0.34))
+    drop-shadow(0 0 22px color-mix(in srgb, var(--gl-accent) 14%, transparent));
+  border-radius: 11px;
+  /* Chamfered top-right — the cut corner signature (§4.1) */
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+  animation: glucargo-report-in var(--gl-d-splash) var(--gl-ease) both;
+}
+
+/* L-bracket registration mark (§4.2) */
+.glucargo-chat-report::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 7px;
+  width: 9px;
+  height: 9px;
+  border-top: 1px solid var(--gl-line-strong);
+  border-left: 1px solid var(--gl-line-strong);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 3;
 }
 
 .glucargo-chat-report__head {
+  position: relative;
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
+  grid-template-columns: 36px minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
   padding: 12px;
   border-bottom: 1px solid rgba(244, 252, 255, 0.10);
   background:
-    linear-gradient(90deg, rgba(120, 150, 225, 0.12), transparent 60%),
+    linear-gradient(90deg, color-mix(in srgb, var(--gl-accent) 12%, transparent), transparent 60%),
     rgba(2, 7, 11, 0.4);
 }
 
-.glucargo-chat-report__head > span {
+/* Serial / metadata designator + CMYK registration garnish (§4.2) */
+.glucargo-regmark {
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+  align-self: start;
+  padding-top: 2px;
+}
+
+.glucargo-regmark em {
+  color: var(--gl-text-faint);
+  font-family: var(--glucargo-font-code);
+  font-size: 8px;
+  font-style: normal;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+
+.glucargo-cmyk {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.glucargo-cmyk i {
+  width: 4px;
+  height: 4px;
+  display: block;
+}
+
+.glucargo-cmyk i:nth-child(1) { background: var(--gl-ink-0); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18); }
+.glucargo-cmyk i:nth-child(2) { background: var(--gl-cyan); }
+.glucargo-cmyk i:nth-child(3) { background: #ff66b3; }
+.glucargo-cmyk i:nth-child(4) { background: var(--gl-signal); }
+
+@media (max-width: 360px) {
+  .glucargo-regmark { display: none; }
+}
+
+/* Precision rule of light under the report header (§4.3) */
+.glucargo-chat-report__head::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gl-signal) 20%, var(--gl-signal) 80%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--gl-signal) 60%, transparent);
+  opacity: 0.7;
+}
+
+.glucargo-chat-report__head > span:first-child {
   display: grid;
   width: 36px;
   height: 36px;
   place-items: center;
-  color: var(--glucargo-ink);
+  color: var(--gl-ink-0);
   background: linear-gradient(135deg, var(--glucargo-cyan), var(--glucargo-green));
-  border-radius: 7px;
-  box-shadow: 0 0 14px rgba(120, 150, 225, 0.28);
+  /* Notched emblem (§4.1) */
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--gl-accent) 32%, transparent);
   font-size: 14px;
+  animation: glucargo-stamp var(--gl-d-reveal) var(--gl-pop) both;
 }
 
 .glucargo-chat-report__head small {
@@ -2648,12 +2915,17 @@
 .glucargo-chat-report__head h2 {
   margin: 2px 0 0;
   overflow: hidden;
-  color: var(--glucargo-text);
+  color: var(--gl-text-bright);
+  font-family: var(--glucargo-font-display);
+  font-weight: 700;
   font-size: 18px;
   line-height: 1.05;
+  letter-spacing: 0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  text-shadow:
+    0 0 14px color-mix(in srgb, var(--gl-accent) 22%, transparent),
+    0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
 .glucargo-chat-report__stats {
@@ -2673,11 +2945,13 @@
 }
 
 .glucargo-chat-report__stats strong {
-  color: var(--glucargo-cyan);
-  font-size: 20px;
+  color: var(--gl-text-bright);
+  font-size: 26px;
+  font-weight: 800;
   line-height: 1;
-  font-family: var(--glucargo-font-code);
-  text-shadow: 0 0 12px rgba(120, 150, 225, 0.32);
+  font-family: var(--glucargo-font-display);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 16px color-mix(in srgb, var(--gl-accent) 45%, transparent);
 }
 
 .glucargo-chat-report__stats small {
@@ -2700,8 +2974,8 @@
 .glucargo-chat-report__lost span {
   padding: 3px 7px;
   color: var(--glucargo-muted);
-  background: rgba(120, 150, 225, 0.06);
-  border: 1px solid rgba(120, 150, 225, 0.18);
+  background: color-mix(in srgb, var(--gl-accent) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gl-accent) 18%, transparent);
   font-family: var(--glucargo-font-code);
   font-size: 9px;
   border-radius: 3px;
@@ -2731,14 +3005,25 @@
     rgba(7, 16, 24, 0.84);
   border: 1px solid color-mix(in srgb, var(--cargo-accent) 24%, rgba(255, 255, 255, 0.10));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  /* Notched card corner (§4.1) */
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+  animation: glucargo-cascade var(--gl-d-move) var(--gl-ease) both;
 }
+
+/* Cascade stagger — each row a few ms after the last (§6.2) */
+.glucargo-chat-report__cargo:nth-child(1) { animation-delay: 120ms; }
+.glucargo-chat-report__cargo:nth-child(2) { animation-delay: 160ms; }
+.glucargo-chat-report__cargo:nth-child(3) { animation-delay: 200ms; }
+.glucargo-chat-report__cargo:nth-child(4) { animation-delay: 240ms; }
+.glucargo-chat-report__cargo:nth-child(5) { animation-delay: 280ms; }
+.glucargo-chat-report__cargo:nth-child(n+6) { animation-delay: 320ms; }
 
 .glucargo-chat-report__cargo.priority-high {
   box-shadow: inset 3px 0 0 var(--glucargo-amber);
 }
 
 .glucargo-chat-report__cargo.priority-critical {
-  border-color: rgba(255, 93, 108, 0.62);
+  border-color: color-mix(in srgb, var(--gl-hazard) 62%, transparent);
   box-shadow: inset 3px 0 0 var(--glucargo-red);
 }
 
@@ -2814,13 +3099,52 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Animations
+   Animations — the motion vocabulary (§6.2)
    ═══════════════════════════════════════════════════════════════════════ */
 
 @keyframes glucargo-window-in {
   0% {
     opacity: 0;
     transform: translateY(8px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Ceremony reveal — extraction chat card settles in (§6.3) */
+@keyframes glucargo-report-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Stamp — scale-in overshoot for hero emblems / COMPLETED marks (§6.2) */
+@keyframes glucargo-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.14);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Cascade stagger — list rows slide in along the diagonal axis (§6.2) */
+@keyframes glucargo-cascade {
+  0% {
+    opacity: 0;
+    transform: translate(6px, 4px);
   }
   100% {
     opacity: 1;
@@ -2845,25 +3169,25 @@
 @keyframes glucargo-brand-breathe {
   0%, 100% {
     box-shadow:
-      0 0 12px rgba(120, 150, 225, 0.28),
+      0 0 12px color-mix(in srgb, var(--gl-accent) 28%, transparent),
       inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
   50% {
     box-shadow:
-      0 0 22px rgba(120, 150, 225, 0.6),
+      0 0 22px color-mix(in srgb, var(--gl-accent) 60%, transparent),
       inset 0 1px 0 rgba(255, 255, 255, 0.35);
   }
 }
 
 @keyframes glucargo-invalid-pulse {
   0% {
-    box-shadow: 0 0 20px rgba(255, 93, 108, 0.50);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--gl-hazard) 50%, transparent);
   }
   50% {
-    box-shadow: 0 0 28px rgba(255, 93, 108, 0.65);
+    box-shadow: 0 0 28px color-mix(in srgb, var(--gl-hazard) 65%, transparent);
   }
   100% {
-    box-shadow: 0 0 16px rgba(255, 93, 108, 0.22);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--gl-hazard) 22%, transparent);
   }
 }
 
@@ -2892,7 +3216,7 @@
   }
   100% {
     transform: translateX(0);
-    box-shadow: 0 0 16px rgba(255, 93, 108, 0.22);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--gl-hazard) 22%, transparent);
   }
 }
 
@@ -2918,13 +3242,13 @@
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.10),
       inset 0 -8px 16px rgba(0, 0, 0, 0.22),
-      0 0 10px rgba(255, 93, 108, 0.18);
+      0 0 10px color-mix(in srgb, var(--gl-hazard) 18%, transparent);
   }
   50% {
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.14),
       inset 0 -8px 16px rgba(0, 0, 0, 0.22),
-      0 0 20px rgba(255, 93, 108, 0.38);
+      0 0 20px color-mix(in srgb, var(--gl-hazard) 38%, transparent);
   }
 }
 
@@ -2943,6 +3267,8 @@
 }
 
 /* ─── Reduced Motion ────────────────────────────────────────────────── */
+/* Decorative loops are disabled (not slowed); ceremonies collapse to
+   straight fades; functional transitions stay ≤120ms (§6.4, §8). */
 @media (prefers-reduced-motion: reduce) {
   .glucargo-fab,
   .glucargo-fab::before,
@@ -2961,14 +3287,29 @@
   .glucargo-container-card,
   .glucargo-container-card::before,
   .glucargo-meter span,
+  .glucargo-chat-report,
+  .glucargo-chat-report__head > span,
+  .glucargo-chat-report__cargo,
+  .glucargo-detail,
   .glucargo-preview-cell.is-valid::before,
   .glucargo-preview-cell.is-invalid {
     animation: none !important;
     transition-duration: 0.01ms !important;
   }
 
-  .glucargo-titlebar::after {
+  /* Keep entrances visible (a 1-step fade) rather than re-triggering motion. */
+  .glucargo-chat-report,
+  .glucargo-detail {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .glucargo-titlebar::after,
+  .glucargo-titlebar::before {
     animation: none;
+  }
+
+  .glucargo-titlebar::after {
     display: none;
   }
 

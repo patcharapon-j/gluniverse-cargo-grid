@@ -2777,14 +2777,19 @@ function buildExtractionReport(mission) {
   const summary = Object.entries(byCategory).map(([label, count]) => `<span>${escapeHtml(label)} <strong>${count}</strong></span>`).join("");
   const abandonedRows = abandoned.slice(0, 6).map(item => `<span>${escapeHtml(getPlayerFacingCargo(item).name)}</span>`).join("");
   const totalCells = extracted.reduce((sum, item) => sum + getShapeMetrics(item.shape).cells.length, 0);
+  const serial = String(mission.id ?? "").replace(/[^a-z0-9]/gi, "").slice(-4).toUpperCase().padStart(4, "0");
   return `
     <div class="glucargo-chat-report">
       <header class="glucargo-chat-report__head">
         <span><i class="fa-solid fa-flag-checkered"></i></span>
         <div>
-          <small>Extraction Manifest</small>
+          <span class="glucargo-kicker">Extraction Manifest</span>
           <h2>${escapeHtml(mission.name)}</h2>
         </div>
+        <span class="glucargo-regmark" aria-hidden="true">
+          <em>GLU·CARGO // ${serial}</em>
+          <span class="glucargo-cmyk"><i></i><i></i><i></i><i></i></span>
+        </span>
       </header>
       <section class="glucargo-chat-report__stats">
         <span><strong>${extracted.length}</strong><small>Secured</small></span>
